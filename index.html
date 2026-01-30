@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Bible Phonics — Speak & Decode</title>
+  <style>
+    :root { --bg:#0b0f14; --card:#111826; --muted:#9fb0c7; --text:#e8f0ff; --accent:#7dd3fc; --good:#34d399; --bad:#fb7185; --warn:#fbbf24; }
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
+    body{margin:0;background:linear-gradient(180deg,#0b0f14,#070a0e);color:var(--text)}
+    header{padding:16px 18px;border-bottom:1px solid #1c2637;position:sticky;top:0;background:rgba(11,15,20,.92);backdrop-filter: blur(8px);z-index:10}
+    h1{margin:0;font-size:18px}
+    .sub{margin:6px 0 0;color:var(--muted);font-size:13px}
+    main{max-width:1100px;margin:0 auto;padding:16px;display:grid;gap:14px}
+    .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}
+    @media (max-width: 900px){ .grid{grid-template-columns:1fr} }
+    .card{background:var(--card);border:1px solid #1c2637;border-radius:14px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .row > * { flex: 0 0 auto; }
+    label{font-size:12px;color:var(--muted)}
+    select,input[type="range"],input[type="text"]{background:#0c1320;border:1px solid #26344a;color:var(--text);border-radius:10px;padding:8px}
+    button{background:#0c1320;border:1px solid #26344a;color:var(--text);border-radius:12px;padding:10px 12px;cursor:pointer}
+    button:hover{border-color:#3b82f6}
+    button.primary{background:linear-gradient(90deg,#0ea5e9,#38bdf8);color:#052133;border:none}
+    button.good{border-color:#1f8f64}
+    button.bad{border-color:#a43b4b}
+    .pill{padding:6px 10px;border:1px solid #26344a;border-radius:999px;color:var(--muted);font-size:12px}
+    .big{font-size:26px;font-weight:700;letter-spacing:.5px}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+    .muted{color:var(--muted)}
+    .sectionTitle{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .score{font-size:12px;color:var(--muted)}
+    .kbd{font-size:12px;color:var(--muted)}
+    .tiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+    @media (max-width: 600px){ .tiles{grid-template-columns:repeat(4,minmax(0,1fr));} }
+    .tile{background:#0c1320;border:1px solid #26344a;border-radius:12px;padding:10px;text-align:center;user-select:none}
+    .tile strong{display:block;font-size:18px}
+    .tile small{display:block;color:var(--muted);margin-top:3px}
+    .tile:hover{border-color:#3b82f6}
+    .answerBox{display:flex;gap:8px;align-items:center;margin-top:8px}
+    .answerBox input{flex:1 1 auto}
+    .feedback{margin-top:8px;font-weight:700}
+    .ok{color:var(--good)}
+    .no{color:var(--bad)}
+    .warn{color:var(--warn)}
+    .verseBox{background:#0c1320;border:1px solid #26344a;border-radius:12px;padding:12px;margin-top:10px}
+    .verseRef{color:var(--accent);font-weight:700}
+    .wordRun{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;line-height:1.6}
+    .w{padding:6px 8px;border:1px solid #26344a;border-radius:10px;background:#0b1220;cursor:pointer}
+    .w:hover{border-color:#3b82f6}
+    .hint{font-size:12px;color:var(--muted);margin-top:6px}
+    .smallBtn{padding:7px 10px;border-radius:10px;font-size:12px}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width: 900px){ .split{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Bible Phonics — Speak & Decode</h1>
+  <div class="sub">Sound → Blend → Read (Reading Bear style) + Quick Drills (Kiz style) + Bible decodables (public domain KJV excerpts).</div>
+</header>
+
+<main>
+  <div class="grid">
+
+    <!-- LEFT: PHONICS CORE -->
+    <section class="card">
+      <div class="sectionTitle">
+        <div>
+          <div class="pill">Core: Sounds • Blending • Words</div>
+        </div>
+        <div class="score">Score: <span id="score">0</span> • Streak: <span id="streak">0</span></div>
+      </div>
+
+      <div class="row" style="margin-bottom:10px">
+        <div>
+          <label>Stage</label><br/>
+          <select id="stage">
+            <option value="sounds">1) Letter Sounds</option>
+            <option value="blend">2) Blend (CVC)</option>
+            <option value="words">3) Read Words</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Set</label><br/>
+          <select id="set">
+            <option value="a">Set A: s m t a p i n</option>
+            <option value="b">Set B: c k e r h d o g</option>
+            <option value="c">Set C: l b f u j w y v</option>
+            <option value="digraphs">Digraphs: sh ch th wh</option>
+          </select>
+        </div>
+
+        <div style="min-width:160px">
+          <label>Voice</label><br/>
+          <select id="voice"></select>
+        </div>
+
+        <div style="min-width:160px">
+          <label>Speed</label><br/>
+          <input id="rate" type="range" min="0.6" max="1.2" step="0.05" value="0.9"/>
+          <span class="kbd" id="rateLabel">0.90×</span>
+        </div>
+
+        <div>
+          <label>&nbsp;</label><br/>
+          <button class="primary" id="nextBtn">Next</button>
+          <button id="repeatBtn">Repeat</button>
+        </div>
+      </div>
+
+      <div class="card" style="background:#0c1320;border-color:#26344a">
+        <div class="muted">Prompt:</div>
+        <div class="big mono" id="prompt">Press Next</div>
+
+        <div class="hint" id="hint">Tip: Don’t guess. Say each sound, then blend.</div>
+
+        <div class="answerBox">
+          <input id="answer" type="text" placeholder="Type what you read (or leave blank for sound stage)" autocomplete="off" />
+          <button class="good smallBtn" id="checkBtn">Check</button>
+          <button class="smallBtn" id="speakBtn">Speak</button>
+        </div>
+
+        <div class="feedback" id="feedback"></div>
+      </div>
+
+      <div style="margin-top:10px" class="split">
+        <div class="card" style="background:#0c1320;border-color:#26344a">
+          <div class="muted">Sound Buttons (click to hear)</div>
+          <div class="tiles" id="soundTiles"></div>
+        </div>
+        <div class="card" style="background:#0c1320;border-color:#26344a">
+          <div class="muted">Blend Buttons (click to hear + blend)</div>
+          <div class="tiles" id="blendTiles"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: BIBLE DECODABLES -->
+    <section class="card">
+      <div class="sectionTitle">
+        <div class="pill">Bible Decodables • Tap to Speak • Tap to Spell</div>
+        <div class="kbd">Goal: decode in real text</div>
+      </div>
+
+      <div class="row" style="margin-bottom:10px">
+        <div>
+          <label>Level</label><br/>
+          <select id="bibleLevel">
+            <option value="cvc">CVC-ish (simplified)</option>
+            <option value="easy">Easy (short words)</option>
+            <option value="mixed">Mixed (more real KJV words)</option>
+          </select>
+        </div>
+        <div>
+          <label>Mode</label><br/>
+          <select id="bibleMode">
+            <option value="tap">Tap words to speak</option>
+            <option value="spell">Tap words to spell (type it)</option>
+          </select>
+        </div>
+        <div>
+          <label>&nbsp;</label><br/>
+          <button class="primary" id="newVerseBtn">New Verse</button>
+          <button id="readVerseBtn">Read Verse</button>
+        </div>
+      </div>
+
+      <div class="verseBox">
+        <div><span class="verseRef" id="verseRef">—</span></div>
+        <div class="muted" id="verseText">Press “New Verse”.</div>
+        <div class="wordRun" id="wordRun"></div>
+
+        <div id="spellArea" style="display:none;margin-top:10px">
+          <div class="muted">Spell the highlighted word:</div>
+          <div class="row" style="margin-top:6px">
+            <div class="big mono" id="targetWord">—</div>
+            <button id="sayTargetBtn" class="smallBtn">Speak Word</button>
+          </div>
+          <div class="answerBox">
+            <input id="spellInput" type="text" placeholder="Type the word" autocomplete="off"/>
+            <button class="good smallBtn" id="spellCheckBtn">Check</button>
+          </div>
+          <div class="feedback" id="spellFeedback"></div>
+        </div>
+
+        <div class="hint">Note: KJV is public domain. “CVC-ish” verses are simplified decodables inspired by Bible phrases for early practice.</div>
+      </div>
+
+      <div class="card" style="background:#0c1320;border-color:#26344a;margin-top:10px">
+        <div class="muted">Parent controls (quick)</div>
+        <div class="hint">
+          • 10–15 minutes/day. Stop while they still want more.<br/>
+          • If they guess, cover the picture/context (if any) and force decode.<br/>
+          • Always: sound it out → blend → say the whole word.
+        </div>
+      </div>
+
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="muted">Keyboard:</div>
+    <div class="hint">
+      • <span class="kbd">Enter</span> = Check • <span class="kbd">N</span> = Next • <span class="kbd">R</span> = Repeat • <span class="kbd">V</span> = New Verse
+    </div>
+  </section>
+</main>
+
+<script>
+  // ---------- SPEECH ----------
+  const synth = window.speechSynthesis;
+  let voices = [];
+  const voiceSel = document.getElementById('voice');
+  const rate = document.getElementById('rate');
+  const rateLabel = document.getElementById('rateLabel');
+
+  function loadVoices() {
+    voices = synth.getVoices() || [];
+    voiceSel.innerHTML = '';
+    voices.forEach((v, idx) => {
+      const opt = document.createElement('option');
+      opt.value = idx;
+      opt.textContent = `${v.name} (${v.lang})${v.default ? ' — default' : ''}`;
+      voiceSel.appendChild(opt);
+    });
+
+    // pick an English voice if possible
+    const english = voices.findIndex(v => (v.lang || '').toLowerCase().startsWith('en'));
+    if (english >= 0) voiceSel.value = String(english);
+  }
+  loadVoices();
+  if (speechSynthesis.onvoiceschanged !== undefined) {
+    speechSynthesis.onvoiceschanged = loadVoices;
+  }
+
+  function speak(text, opts = {}) {
+    if (!text) return;
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    const v = voices[Number(voiceSel.value)] || null;
+    if (v) u.voice = v;
+    u.rate = Number(rate.value);
+    u.pitch = opts.pitch ?? 1.0;
+    u.volume = opts.volume ?? 1.0;
+    synth.speak(u);
+  }
+
+  rate.addEventListener('input', () => rateLabel.textContent = `${Number(rate.value).toFixed(2)}×`);
+
+  // ---------- PHONICS DATA ----------
+  const sets = {
+    a: {
+      letters: [
+        {g:'s', s:'sss'}, {g:'m', s:'mmm'}, {g:'t', s:'t'}, {g:'a', s:'ă'}, {g:'p', s:'p'}, {g:'i', s:'ĭ'}, {g:'n', s:'nnn'}
+      ],
+      cvc: ['sat','mat','man','tap','tin','pan','sit','pin','tan','nap','sip','pat']
+    },
+    b: {
+      letters: [
+        {g:'c', s:'k'}, {g:'k', s:'k'}, {g:'e', s:'ĕ'}, {g:'r', s:'rrr'}, {g:'h', s:'hhh'}, {g:'d', s:'d'}, {g:'o', s:'ŏ'}, {g:'g', s:'g'}
+      ],
+      cvc: ['cat','cot','dog','red','hog','rock','dock','cod','rag','had','rod','cog']
+    },
+    c: {
+      letters: [
+        {g:'l', s:'lll'}, {g:'b', s:'b'}, {g:'f', s:'fff'}, {g:'u', s:'ŭ'}, {g:'j', s:'j'}, {g:'w', s:'w'}, {g:'y', s:'y'}, {g:'v', s:'v'}
+      ],
+      cvc: ['lug','bug','fun','rub','web','yum','van','luv','wig','yup','jab','vug']
+    },
+    digraphs: {
+      letters: [
+        {g:'sh', s:'sh'}, {g:'ch', s:'ch'}, {g:'th', s:'th'}, {g:'wh', s:'w'}, {g:'a', s:'ă'}, {g:'i', s:'ĭ'}, {g:'o', s:'ŏ'}
+      ],
+      cvc: ['ship','shop','thin','chat','whip','chop','than','wham']
+    }
+  };
+
+  function soundTextForGrapheme(g) {
+    // For speaking: we speak *sounds*, not letter names.
+    // Use slightly exaggerated continuous sounds for blending practice.
+    const map = {
+      'a':'ă', 'e':'ĕ', 'i':'ĭ', 'o':'ŏ', 'u':'ŭ',
+      's':'sss', 'm':'mmm', 'n':'nnn', 'l':'lll', 'r':'rrr', 'f':'fff', 'h':'hhh',
+      't':'t', 'p':'p', 'b':'b', 'd':'d', 'g':'g', 'c':'k', 'k':'k', 'j':'j', 'v':'v', 'w':'w', 'y':'y',
+      'sh':'sh', 'ch':'ch', 'th':'th', 'wh':'w'
+    };
+    return map[g] || g;
+  }
+
+  function speakSound(g) {
+    speak(soundTextForGrapheme(g), { pitch: 1.05 });
+  }
+
+  function speakBlend(word) {
+    // Speak phoneme-by-phoneme then whole word. Helps stop guessing.
+    const parts = splitWordToGraphemes(word);
+    const spacedSounds = parts.map(p => soundTextForGrapheme(p)).join(' … ');
+    speak(spacedSounds);
+    setTimeout(() => speak(word), 600 + parts.length * 320);
+  }
+
+  function splitWordToGraphemes(word) {
+    // Handle simple digraphs first.
+    const digraphs = ['sh','ch','th','wh'];
+    let w = word.toLowerCase();
+    const out = [];
+    while (w.length) {
+      const d = digraphs.find(x => w.startsWith(x));
+      if (d) { out.push(d); w = w.slice(d.length); continue; }
+      out.push(w[0]); w = w.slice(1);
+    }
+    return out;
+  }
+
+  // ---------- UI: TILES ----------
+  const soundTiles = document.getElementById('soundTiles');
+  const blendTiles = document.getElementById('blendTiles');
+
+  function rebuildTiles() {
+    const setKey = document.getElementById('set').value;
+    const data = sets[setKey];
+
+    soundTiles.innerHTML = '';
+    data.letters.forEach(item => {
+      const d = document.createElement('div');
+      d.className = 'tile';
+      d.innerHTML = `<strong>${item.g}</strong><small>sound</small>`;
+      d.addEventListener('click', () => speakSound(item.g));
+      soundTiles.appendChild(d);
+    });
+
+    blendTiles.innerHTML = '';
+    data.cvc.slice(0, 12).forEach(w => {
+      const d = document.createElement('div');
+      d.className = 'tile';
+      d.innerHTML = `<strong>${w}</strong><small>blend</small>`;
+      d.addEventListener('click', () => speakBlend(w));
+      blendTiles.appendChild(d);
+    });
+  }
+
+  document.getElementById('set').addEventListener('change', rebuildTiles);
+  rebuildTiles();
+
+  // ---------- CORE GAME ----------
+  const stageSel = document.getElementById('stage');
+  const promptEl = document.getElementById('prompt');
+  const answerEl = document.getElementById('answer');
+  const feedbackEl = document.getElementById('feedback');
+  const scoreEl = document.getElementById('score');
+  const streakEl = document.getElementById('streak');
+  const hintEl = document.getElementById('hint');
+
+  let current = { type:'', value:'', spoken:'' };
+  let score = 0;
+  let streak = 0;
+
+  function rand(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+  function makePrompt() {
+    feedbackEl.textContent = '';
+    const setKey = document.getElementById('set').value;
+    const data = sets[setKey];
+    const stage = stageSel.value;
+
+    if (stage === 'sounds') {
+      const item = rand(data.letters);
+      current = { type:'sound', value:item.g, spoken:soundTextForGrapheme(item.g) };
+      promptEl.textContent = item.g;
+      answerEl.value = '';
+      answerEl.placeholder = 'Leave blank or type the sound (optional)';
+      hintEl.textContent = 'Say the SOUND (not the letter name). Press Speak if needed.';
+      speakSound(item.g);
+      return;
+    }
+
+    if (stage === 'blend') {
+      const w = rand(data.cvc);
+      current = { type:'blend', value:w, spoken:w };
+      promptEl.textContent = w.split('').join(' ');
+      answerEl.value = '';
+      answerEl.placeholder = 'Type the word after you blend it';
+      hintEl.textContent = 'Touch each sound in your mouth, then blend fast.';
+      speakBlend(w);
+      return;
+    }
+
+    // words
+    const w = rand(data.cvc);
+    current = { type:'word', value:w, spoken:w };
+    promptEl.textContent = w;
+    answerEl.value = '';
+    answerEl.placeholder = 'Type the word you read';
+    hintEl.textContent = 'Read the whole word clean. No guessing.';
+    speak(w);
+  }
+
+  function normalize(s){ return (s||'').trim().toLowerCase().replace(/[^a-z]/g,''); }
+
+  function checkAnswer() {
+    const stage = stageSel.value;
+    const typed = normalize(answerEl.value);
+
+    if (stage === 'sounds') {
+      // optional check: accept either exact grapheme (for digraphs) or sound label text match loosely
+      if (!typed) {
+        feedbackEl.textContent = 'OK — sound stage doesn’t require typing.';
+        feedbackEl.className = 'feedback ok';
+        return;
+      }
+      const ok = typed === normalize(current.value) || typed === normalize(current.spoken);
+      if (ok) {
+        streak++; score += 1;
+        feedbackEl.textContent = 'Correct.';
+        feedbackEl.className = 'feedback ok';
+      } else {
+        streak = 0;
+        feedbackEl.textContent = `Not quite. This is: ${current.spoken}`;
+        feedbackEl.className = 'feedback no';
+        speakSound(current.value);
+      }
+    } else {
+      const ok = typed === normalize(current.value);
+      if (ok) {
+        streak++; score += 2;
+        feedbackEl.textContent = 'Correct.';
+        feedbackEl.className = 'feedback ok';
+        speak('Good job');
+        setTimeout(makePrompt, 500);
+      } else {
+        streak = 0;
+        feedbackEl.textContent = `No. Sound it out:`;
+        feedbackEl.className = 'feedback no';
+        speakBlend(current.value);
+      }
+    }
+
+    scoreEl.textContent = score;
+    streakEl.textContent = streak;
+  }
+
+  document.getElementById('nextBtn').addEventListener('click', makePrompt);
+  document.getElementById('repeatBtn').addEventListener('click', () => {
+    if (!current.value) return;
+    if (current.type === 'sound') speakSound(current.value);
+    else if (current.type === 'blend') speakBlend(current.value);
+    else speak(current.value);
+  });
+  document.getElementById('checkBtn').addEventListener('click', checkAnswer);
+  document.getElementById('speakBtn').addEventListener('click', () => {
+    if (!current.value) return;
+    if (current.type === 'sound') speakSound(current.value);
+    else if (current.type === 'blend') speakBlend(current.value);
+    else speak(current.value);
+  });
+
+  answerEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') checkAnswer(); });
+
+  // ---------- BIBLE DECODABLES ----------
+  const bibleLevel = document.getElementById('bibleLevel');
+  const bibleMode = document.getElementById('bibleMode');
+  const verseRef = document.getElementById('verseRef');
+  const verseText = document.getElementById('verseText');
+  const wordRun = document.getElementById('wordRun');
+  const spellArea = document.getElementById('spellArea');
+  const targetWordEl = document.getElementById('targetWord');
+  const spellInput = document.getElementById('spellInput');
+  const spellFeedback = document.getElementById('spellFeedback');
+
+  // KJV is public domain. These are short excerpts; not a whole chapter.
+  const verses = {
+    // simplified "CVC-ish" decodables inspired by Bible phrases (for early blending reps)
+    cvc: [
+      { ref: 'Genesis 1:1 (decodable)', text: 'God made the land and sea.' },
+      { ref: 'Psalm 23:1 (decodable)', text: 'The Lord is my help.' },
+      { ref: 'John 3:16 (decodable)', text: 'God sent His Son.' },
+      { ref: 'Psalm 119:105 (decodable)', text: 'Thy word is a lamp.' },
+      { ref: 'Proverbs 3:5 (decodable)', text: 'Trust the Lord.' }
+    ],
+    // easy-ish actual KJV excerpts with shorter words
+    easy: [
+      { ref: 'Psalm 23:1 (KJV)', text: 'The LORD is my shepherd; I shall not want.' },
+      { ref: 'Genesis 1:1 (KJV)', text: 'In the beginning God created the heaven and the earth.' },
+      { ref: 'Psalm 119:105 (KJV)', text: 'Thy word is a lamp unto my feet, and a light unto my path.' },
+      { ref: 'Proverbs 3:5 (KJV)', text: 'Trust in the LORD with all thine heart; and lean not unto thine own understanding.' }
+    ],
+    // mixed: more “real” words
+    mixed: [
+      { ref: 'John 1:1 (KJV)', text: 'In the beginning was the Word, and the Word was with God, and the Word was God.' },
+      { ref: 'Romans 8:1 (KJV)', text: 'There is therefore now no condemnation to them which are in Christ Jesus.' },
+      { ref: 'Ephesians 6:11 (KJV)', text: 'Put on the whole armour of God, that ye may be able to stand against the wiles of the devil.' }
+    ]
+  };
+
+  let currentVerse = null;
+  let currentSpellWord = null;
+
+  function tokenizeWords(text) {
+    // keep apostrophes off; strip punctuation for spelling mode
+    return text.split(/\s+/).map(w => w.trim()).filter(Boolean);
+  }
+
+  function renderVerse() {
+    wordRun.innerHTML = '';
+    if (!currentVerse) return;
+
+    verseRef.textContent = currentVerse.ref;
+    verseText.textContent = currentVerse.text;
+
+    const words = tokenizeWords(currentVerse.text);
+    words.forEach((raw) => {
+      const clean = raw.replace(/[^\w']/g,'');
+      const btn = document.createElement('span');
+      btn.className = 'w';
+      btn.textContent = raw;
+
+      btn.addEventListener('click', () => {
+        if (bibleMode.value === 'tap') {
+          speak(clean);
+        } else {
+          // spell mode: pick word
+          currentSpellWord = clean;
+          targetWordEl.textContent = raw;
+          spellInput.value = '';
+          spellFeedback.textContent = '';
+          spellFeedback.className = 'feedback';
+          spellArea.style.display = 'block';
+          speak(clean);
+        }
+      });
+
+      wordRun.appendChild(btn);
+    });
+
+    // toggle spell area
+    spellArea.style.display = (bibleMode.value === 'spell') ? 'block' : 'none';
+    if (bibleMode.value === 'spell') {
+      // preselect a short word if possible
+      const candidate = words
+        .map(w => w.replace(/[^\w']/g,''))
+        .filter(w => w.length >= 2 && w.length <= 6)[0] || words[0].replace(/[^\w']/g,'');
+      currentSpellWord = candidate;
+      targetWordEl.textContent = candidate;
+    }
+  }
+
+  function newVerse() {
+    const lvl = bibleLevel.value;
+    currentVerse = rand(verses[lvl]);
+    renderVerse();
+  }
+
+  document.getElementById('newVerseBtn').addEventListener('click', newVerse);
+  document.getElementById('readVerseBtn').addEventListener('click', () => {
+    if (!currentVerse) return;
+    speak(currentVerse.text);
+  });
+
+  bibleMode.addEventListener('change', () => {
+    renderVerse();
+  });
+
+  document.getElementById('sayTargetBtn').addEventListener('click', () => {
+    if (!currentSpellWord) return;
+    speak(currentSpellWord);
+  });
+
+  document.getElementById('spellCheckBtn').addEventListener('click', () => {
+    if (!currentSpellWord) return;
+    const ok = normalize(spellInput.value) === normalize(currentSpellWord);
+    if (ok) {
+      spellFeedback.textContent = 'Correct.';
+      spellFeedback.className = 'feedback ok';
+      score += 2; streak += 1;
+      scoreEl.textContent = score; streakEl.textContent = streak;
+      speak('Good');
+      // auto-pick next short word
+      const words = tokenizeWords(currentVerse.text)
+        .map(w => w.replace(/[^\w']/g,''))
+        .filter(w => w && normalize(w) !== normalize(currentSpellWord));
+      currentSpellWord = words.find(w => w.length >= 2 && w.length <= 6) || rand(words) || currentSpellWord;
+      targetWordEl.textContent = currentSpellWord;
+      spellInput.value = '';
+    } else {
+      spellFeedback.textContent = `No. The word is: ${currentSpellWord}`;
+      spellFeedback.className = 'feedback no';
+      streak = 0; streakEl.textContent = streak;
+      speak(currentSpellWord);
+    }
+  });
+
+  spellInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('spellCheckBtn').click(); });
+
+  // ---------- KEYBOARD SHORTCUTS ----------
+  document.addEventListener('keydown', (e) => {
+    if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT')) return;
+    if (e.key.toLowerCase() === 'n') makePrompt();
+    if (e.key.toLowerCase() === 'r') document.getElementById('repeatBtn').click();
+    if (e.key.toLowerCase() === 'v') newVerse();
+  });
+
+  // start ready
+  rateLabel.textContent = `${Number(rate.value).toFixed(2)}×`;
+</script>
+</body>
+</html>
